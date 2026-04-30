@@ -107,3 +107,8 @@ ggplot(peru_datos) +
     plot.margin = margin(15, 25, 10, 25)      # más espacio a los costados
   )
 ```
+
+```{r}
+ggsave("heatmap_peru.png", width = 10, height = 6)
+```
+
