@@ -1,0 +1,109 @@
+---
+title: "HeatMapPeru"
+format: html
+editor: visual
+---
+
+# Heat Map de Perú
+
+------------------------------------------------------------------------
+
+## Librerías
+
+```{r}
+library(sf)
+library(purrr)
+library(tidyverse)
+library(ggplot2)
+library(ggrepel)
+library(readxl)
+library(readr)
+```
+
+## Subir shapefile
+
+```{r}
+dirmapas <- "C:/Users/fabia/OneDrive/Desktop/cursos_R/biostats/DEPARTAMENTOS_inei_geogpsperu_suyopomalia"
+setwd(dirmapas)
+peru_d<-st_read("DEPARTAMENTOS_inei_geogpsperu_suyopomalia.shp")
+```
+
+## Mapa básico del Perú
+
+```{r}
+ggplot(data = peru_d) +
+  geom_sf()
+```
+
+## Lectura y limpieza de data
+
+```{r}
+DF<-read_csv("delitosciber2020.csv")
+DF
+```
+
+```{r}
+DF1 <- DF %>%
+  group_by(dpto_pjfs) %>% # Se agrupa según Departamento donde se encuentra ubicado la Presidencia de Junta de Fiscales Superiores delDistrito Fiscal
+  summarise(cantidad = sum(cantidad, na.rm = TRUE))
+DF1
+```
+
+```{r}
+DF1 <- DF1 %>%
+  mutate(porcentaje = (cantidad / sum(cantidad)) * 100)
+DF1
+```
+
+```{r}
+delitos<-DF1%>%
+  select(dpto_pjfs, porcentaje)
+```
+
+```{r}
+summary(DF1$porcentaje)
+```
+
+## Mapa de Calor
+
+```{r}
+peru_datos <- peru_d %>% 
+  left_join(delitos, by = c("NOMBDEP" = "dpto_pjfs")) 
+
+
+```
+
+```{r}
+ggplot(peru_datos) +
+  geom_sf(aes(fill = delitos$porcentaje), color = "grey60", size = 0.3) +
+  labs(
+    title = "Denuncias por ciberdelincuencia en Perú",
+    subtitle = "Porcentaje de denuncias según departamento de la Presidencia\nde Junta de Fiscales Superiores del Distrito Fiscal, 2020",
+    caption = "Datos: Ministerio Público Fiscalía de la Nación (MPFN) | Elaboración propia",
+    x = NULL, y = NULL
+  ) +
+  scale_fill_viridis_c(
+    name = "% de delitos",
+    option = "viridis",
+    direction = -1,
+    na.value = "grey95",
+    limits = c(0.5, 35),
+    breaks = c(5, 15, 25, 35)
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 18, color = "#2c3e50",
+                              hjust = 0, margin = margin(b = 6)),
+    plot.subtitle = element_text(size = 11, color = "#34495e",
+                                 hjust = 0, margin = margin(b = 14)),
+    plot.caption = element_text(size = 8, color = "grey40", hjust = 1,
+                                margin = margin(t = 10)),
+    legend.position = "bottom",               # abajo, centrada, sin cortes
+    legend.key.width = unit(2, "cm"),
+    legend.key.height = unit(0.4, "cm"),
+    legend.title = element_text(size = 10, face = "bold"),
+    legend.text = element_text(size = 9),
+    panel.grid = element_line(color = "grey90", linewidth = 0.2),
+    plot.margin = margin(15, 25, 10, 25)      # más espacio a los costados
+  )
+```
