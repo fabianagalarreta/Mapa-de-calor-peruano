@@ -297,6 +297,13 @@ ggsave("heatmap_peru.png", width = 10, height = 6)
 
 ---
 
+# Producto final
+
+<img width="1014" height="954" alt="image" src="https://github.com/user-attachments/assets/2548eaa0-629e-4aeb-b038-f8d54f929211" />
+
+
+---
+
 # 💾 Código completo
 
 ```r
